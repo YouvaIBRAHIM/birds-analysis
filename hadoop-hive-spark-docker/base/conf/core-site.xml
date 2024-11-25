@@ -30,4 +30,8 @@
         <name>hadoop.proxyuser.jupyter.hosts</name>
         <value>*</value>
     </property>
+    <property>
+        <name>ipc.client.max.rpc.data.length</name>
+        <value>104857600</value>
+    </property>
 </configuration>

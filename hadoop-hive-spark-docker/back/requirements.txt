@@ -10,10 +10,11 @@ asyncpg==0.29.0
 alembic==1.13.2
 plotly==5.23.0
 passlib==1.7.4
-websockets==13.0
-langchain==0.2
-langchain_openai==0.1.22
 elasticsearch==8.16.0
 pyhive==0.7.0
 beautifulsoup4==4.12.3
 hdfs==2.7.3
+pyspark==3.5.3
+findspark==2.0.1
+openpyxl
+tensorflow-serving-api

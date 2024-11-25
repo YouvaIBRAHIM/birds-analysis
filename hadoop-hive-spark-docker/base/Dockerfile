@@ -28,6 +28,7 @@ RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 USER $USERNAME
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Hadoop
 ARG HADOOP_VERSION=3.4.0
@@ -103,6 +104,7 @@ COPY --chown=$USERNAME:$GROUPNAME conf/mapred-site.xml $HADOOP_CONF_DIR/
 COPY --chown=$USERNAME:$GROUPNAME conf/workers $HADOOP_CONF_DIR/
 COPY --chown=$USERNAME:$GROUPNAME conf/spark-defaults.conf $SPARK_CONF_DIR/
 COPY --chown=$USERNAME:$GROUPNAME conf/log4j.properties $SPARK_CONF_DIR/
+COPY --chown=$USERNAME:$GROUPNAME conf/java-opts $SPARK_CONF_DIR/
 COPY --chown=$USERNAME:$GROUPNAME conf/hive-site.xml $HIVE_CONF_DIR/
 
 RUN ln $HADOOP_CONF_DIR/workers $SPARK_CONF_DIR/ \
