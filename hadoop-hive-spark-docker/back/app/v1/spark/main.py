@@ -3,7 +3,7 @@ import os
 os.environ['HADOOP_CONF_DIR'] = '/opt/hadoop/etc/hadoop'  # Chemin vers les fichiers de configuration Hadoop
 os.environ['YARN_CONF_DIR'] = '/opt/hadoop/etc/hadoop'  # Chemin vers les fichiers de configuration YARN
 os.environ['SPARK_HOME'] = '/opt/spark' 
-
+os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-1.11.0-openjdk-amd64'
 import findspark
 findspark.init('/opt/spark')
 

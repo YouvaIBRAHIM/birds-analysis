@@ -1,4 +1,4 @@
-# Hadoop-Hive-Spark cluster + Jupyter on Docker
+# Hadoop-Hive-Spark cluster on Docker
 
 ## Software
 

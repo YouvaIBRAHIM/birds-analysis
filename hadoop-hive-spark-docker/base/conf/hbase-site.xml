@@ -1,0 +1,57 @@
+<configuration>
+
+  <!-- HDFS Configuration -->
+  <property>
+    <name>hbase.rootdir</name>
+    <value>hdfs://master:9000/hbase</value>
+    <description>The directory where HBase stores its data.</description>
+  </property>
+
+  <!-- Configuration de HBase Thrift Server -->
+  <property>
+    <name>hbase.regionserver.thrift.port</name>
+    <value>9090</value>
+    <description>The port for HBase Thrift Server to listen on.</description>
+  </property>
+
+  <property>
+    <name>hbase.regionserver.thrift.address</name>
+    <value>0.0.0.0</value>
+    <description>HBase Thrift Server will listen on all interfaces.</description>
+  </property>
+
+  <!-- HBase Master settings -->
+  <property>
+    <name>hbase.master</name>
+    <value>master:16000</value>
+    <description>Address of the HBase master server</description>
+  </property>
+
+  <!-- HBase Zookeeper settings -->
+  <property>
+    <name>hbase.zookeeper.quorum</name>
+    <value>master</value>
+    <description>ZooKeeper quorum for HBase</description>
+  </property>
+  
+  <property>
+    <name>hbase.zookeeper.property.clientPort</name>
+    <value>2181</value>
+    <description>The port where ZooKeeper listens for client connections.</description>
+  </property>
+
+  <!-- Logging configuration -->
+  <property>
+    <name>hbase.regionserver.info.port</name>
+    <value>16030</value>
+    <description>Port for the RegionServer info page</description>
+  </property>
+
+  <!-- Set the HBase root directory in HDFS -->
+  <property>
+    <name>hbase.tmp.dir</name>
+    <value>/tmp/hbase</value>
+    <description>Directory for HBase temporary files</description>
+  </property>
+
+</configuration>

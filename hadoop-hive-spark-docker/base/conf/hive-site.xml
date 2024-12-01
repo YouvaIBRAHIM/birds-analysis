@@ -19,6 +19,15 @@
         <name>hive.metastore.warehouse.dir</name>
         <value>/user/hive/warehouse</value>
     </property>
+    <property>
+        <name>hbase.regionserver.thrift.port</name>
+        <value>9090</value>
+    </property>
+    <property>
+        <name>hbase.thrift.support.proxyuser</name>
+        <value>true</value>
+    </property>
+
     <!--Postgres metastore connection details (stores info about tables etc.)-->
     <property>
         <name>javax.jdo.option.ConnectionDriverName</name>

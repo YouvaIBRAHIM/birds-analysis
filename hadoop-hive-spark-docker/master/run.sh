@@ -14,6 +14,7 @@ hdfs --daemon start namenode
 echo "Starting Hadoop data node..."
 hdfs --daemon start datanode
 
+
 echo "Starting Hadoop resource manager..."
 yarn --daemon start resourcemanager
 
@@ -46,6 +47,16 @@ then
   hdfs dfs -mkdir -p  "$SPARK_JARS_HDFS_PATH"
   hdfs dfs -put "$SPARK_HOME"/jars/* "$SPARK_JARS_HDFS_PATH"/
 fi
+
+hdfs dfs -chmod 777 /tmp
+
+
+# Démarrer HBase
+$HBASE_HOME/bin/start-hbase.sh
+
+# Démarrer HBase Thrift Server
+$HBASE_HOME/bin/hbase thrift start
+
 
 echo "Starting Spark master node..."
 spark-class org.apache.spark.deploy.master.Master --ip "$SPARK_MASTER_HOST"

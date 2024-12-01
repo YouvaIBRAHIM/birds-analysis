@@ -89,6 +89,29 @@ RUN set -x \
  && tar -xf /tmp/hive.tar.gz -C $HIVE_HOME --strip-components 1 \
  && rm /tmp/hive*
 
+# Installe HBase
+ARG HBASE_VERSION=2.6.1
+ARG HBASE_URL=https://archive.apache.org/dist/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz
+ENV HBASE_HOME=/opt/hbase
+
+RUN set -x \
+ && curl -fsSL https://archive.apache.org/dist/hbase/KEYS -o /tmp/hbase-KEYS  \
+ && gpg --import /tmp/hbase-KEYS \
+ && sudo mkdir $HBASE_HOME \
+ && sudo chown $USERNAME:$GROUPNAME -R $HBASE_HOME \
+ && curl -fsSL $HBASE_URL -o /tmp/hbase.tar.gz \
+ && curl -fsSL $HBASE_URL.asc -o /tmp/hbase.tar.gz.asc \
+ && gpg --verify /tmp/hbase.tar.gz.asc \
+ && tar -xvf /tmp/hbase.tar.gz -C $HBASE_HOME --strip-components 1 \
+ && rm /tmp/hbase*
+
+# Configurer le PATH et autres variables d'environnement
+ENV PATH=$HBASE_HOME/bin:$PATH
+ENV HBASE_CONF_DIR=$HBASE_HOME/conf
+
+# Copier la configuration HBase
+COPY --chown=$USERNAME:$GROUPNAME conf/hbase-site.xml $HBASE_CONF_DIR/
+
 #RUN sudo rm $HIVE_HOME/lib/guava-*.jar \
 # && sudo cp $HADOOP_HOME/share/hadoop/hdfs/lib/guava-*.jar $HIVE_HOME/lib/
 #RUN mv /opt/hive/lib/log4j-slf4j-impl-2.6.2.jar /opt/hive/lib/log4j-slf4j-impl-2.6.2.jar.bak

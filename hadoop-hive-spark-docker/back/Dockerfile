@@ -1,74 +1,59 @@
-FROM hadoop-hive-spark-base AS base
+FROM ubuntu:20.04
 
-FROM tensorflow/tensorflow:latest-jupyter
+ENV DEBIAN_FRONTEND=noninteractive
 
-FROM python:3.9
+# Installer Java, Python et autres outils nécessaires
+RUN apt-get update && apt-get install -y \
+    openjdk-11-jdk python3 python3-pip curl libpq-dev openssh-server && \
+    apt-get clean
 
-RUN python3 -m venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
-
-# Ajouter les clés GPG nécessaires pour Ubuntu focal
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 871920D1991BC93C
-
-# Créer /etc/apt/sources.list si manquant
-RUN if [ ! -f /etc/apt/sources.list ]; then \
-        echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse" > /etc/apt/sources.list; \
-        echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list; \
-        echo "deb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list; \
-        echo "deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list; \
-    fi
-
-# Mise à jour des paquets et installation des dépendances nécessaires
-RUN apt-get -qq update  \
- && DEBIAN_FRONTEND=noninteractive apt-get -qq install --no-install-recommends \
-      sudo \
-      openjdk-8-jdk \
-      curl \
-      coreutils \
-      libc6-dev \
- && rm -rf /var/lib/apt/lists/*
-
-# Définir l'utilisateur et le groupe
+# Créer un utilisateur et groupe non-root
 ARG USERNAME=jupyter
 ARG GROUPNAME=jupyter
 ARG UID=1001
 ARG GID=1001
 
-RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
- && chmod 0440 /etc/sudoers.d/$USERNAME \
- && groupadd -g $GID $GROUPNAME \
- && useradd -m -s /bin/bash -u $UID -g $GID $USERNAME
+# Configurer l'utilisateur jupyter
+RUN groupadd -g $GID $GROUPNAME && \
+    useradd -m -s /bin/bash -u $UID -g $GID $USERNAME
 
-USER $USERNAME
+# Préparer les répertoires et ajuster les permissions
+RUN mkdir -p /opt/spark /var/run/sshd && \
+    chown -R $USERNAME:$GROUPNAME /opt/spark && \
+    chmod 755 /var/run/sshd
 
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
-
-# Hadoop
-COPY --from=base --chown=$USERNAME:$GROUPNAME /opt/hadoop /opt/hadoop
-ENV HADOOP_HOME=/opt/hadoop
-ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
-ENV PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH
-ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
-
-# Spark
-COPY --from=base --chown=$USERNAME:$GROUPNAME /opt/spark /opt/spark
+# Installer Apache Spark sous root
+ENV SPARK_VERSION=3.4.4
+ENV HADOOP_VERSION=3
 ENV SPARK_HOME=/opt/spark
-ENV PYTHONHASHSEED=1
-ENV PYSPARK_PYTHON=python3
-ENV SPARK_CONF_DIR=$SPARK_HOME/conf
-ENV PATH=$SPARK_HOME/sbin:$SPARK_HOME/bin:$PATH
 
-# Hive
-COPY --from=base --chown=$USERNAME:$GROUPNAME /opt/hive /opt/hive
-ENV HIVE_HOME=/opt/hive
-ENV HIVE_CONF_DIR=$HIVE_HOME/conf
-ENV PATH=$HIVE_HOME/sbin:$HIVE_HOME/bin:$PATH
+RUN curl --retry 3 -O https://dlcdn.apache.org/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz && \
+    tar -xvf spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz && \
+    mv spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION/* $SPARK_HOME/ && \
+    rm -rf spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION
 
-WORKDIR /home/$USERNAME
+# Configurer PATH pour Spark
+ENV PATH="$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH"
 
-COPY . /home/$USERNAME/
+# Copier les fichiers d'application
+WORKDIR /app
+COPY . /app/
 
-RUN sudo pip install -r /home/$USERNAME/requirements.txt
+# Installer les dépendances Python
+RUN pip3 install -r /app/requirements.txt
 
-RUN sudo chmod a+x /home/$USERNAME/run.sh
-CMD ["sudo", "fastapi", "run", "main.py", "--port", "8000", "--reload"]
+# Donner les droits nécessaires à l'utilisateur jupyter
+RUN chown -R $USERNAME:$GROUPNAME /app /opt/spark
+
+# Copier le script d'initialisation
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# # Passer à l'utilisateur non-root pour exécuter l'application
+# USER $USERNAME
+
+# Exposer les ports nécessaires
+EXPOSE 7077 8080 8000
+
+# Lancer le script d'initialisation
+CMD ["/entrypoint.sh"]

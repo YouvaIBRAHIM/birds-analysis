@@ -38,6 +38,7 @@ services:
       - "9870:9870"
       - "50070:50070"
       - "10000:10000"
+      - "9090:9090"
     volumes:
       - namenode:/opt/hadoop/dfs/name
     restart: always
